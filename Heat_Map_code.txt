@@ -1,0 +1,17 @@
+def heat_map():
+    import pandas as pd
+    from keplergl import KeplerGl
+    combined_trip_data = engine.execute("""select round(pickup_longitude,3), round(pickup_latitude,3)
+                        from (
+                        select tpep_pickup_datetime, pickup_longitude, pickup_latitude, dropoff_longitude, dropoff_latitude, trip_distance, fare_amount
+                        from Yellow_Taxi
+                        union all
+                        select pickup_datetime, pickup_longitude, pickup_latitude, dropoff_longitude, dropoff_latitude, trip_distance, fare_amount
+                        from Uber_new
+                        )
+                        """).fetchall()
+    heat_map_df = pd.DataFrame(data=combined_trip_data, columns=["pickup_longitude","pickup_latitude"])
+    heat_grouped = heat_map_df.groupby(["pickup_longitude","pickup_latitude"]).size().reset_index(name='counts')
+    map_1 = KeplerGl(height=500)
+    map_1.add_data(data = heat_grouped)
+    return map_1
